@@ -68,6 +68,7 @@ runs:
       with:
         path: ./remote_repo
         title: "Telepresence ${{ env.RELEASE_BRANCH_NAME }}"
+        base: main
         branch: ${{ env.RELEASE_BRANCH_NAME }}
         token: ${{ inputs.GH_AUTO_RELEASE_TOKEN }}
         body: "New telepresence release"
