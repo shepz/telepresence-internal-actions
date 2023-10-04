@@ -23,6 +23,11 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Set environment variables
+      shell: bash
+      run: |
+        echo "RELEASE_BRANCH_NAME=release/$(echo ${{ inputs.telepresence_version }} | sed 's/^v//;s/-rc\.[0-9]*$//')" >> $GITHUB_ENV
+
     - name: Checkout other repo
       uses: actions/checkout@v3
       with:
@@ -30,6 +35,7 @@ runs:
         repository: ${{ inputs.repository }}
         token: ${{ inputs.GH_AUTO_RELEASE_TOKEN }}
         persist-credentials: false
+        ref: ${{ env.RELEASE_BRANCH_NAME }}
 
     - name: Setup Git Config
       shell: bash
@@ -40,11 +46,6 @@ runs:
         git config --global user.name '${{ inputs.GH_AUTO_RELEASE_USER }}'
         git config --global credential.helper 'store --file=/tmp/git-credentials'
         echo "https://x-access-token:${{ inputs.GH_AUTO_RELEASE_TOKEN }}@github.com" > /tmp/git-credentials
-
-    - name: Set environment variables
-      shell: bash
-      run: |
-        echo "RELEASE_BRANCH_NAME=release/$(echo ${{ inputs.telepresence_version }} | sed 's/^v//;s/-rc\.[0-9]*$//')" >> $GITHUB_ENV
 
     - uses: actions/setup-go@v3
       with:
