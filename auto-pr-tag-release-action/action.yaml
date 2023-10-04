@@ -70,9 +70,3 @@ runs:
         branch: ${{ env.RELEASE_BRANCH_NAME }}
         token: ${{ inputs.GH_AUTO_RELEASE_TOKEN }}
         body: "New telepresence release"
-
-    - name: Push tags
-      shell: bash
-      working-directory: ./remote_repo
-      run: |
-        git push origin {,rpc/}${{ inputs.telepresence_version }}
