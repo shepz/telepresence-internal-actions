@@ -59,6 +59,7 @@ runs:
 
     - name: Check if branch exists
       shell: bash
+      working-directory: ./remote_repo
       id: checkbranch
       run: |
         if git show-ref --verify --quiet refs/remotes/origin/${{ env.RELEASE_BRANCH_NAME }}; then
@@ -69,12 +70,14 @@ runs:
 
     - name: Switch to the branch if it exists
       shell: bash
+      working-directory: ./remote_repo
       if: env.BRANCH_EXISTS == 'true'
       run: |
         git checkout ${{ env.RELEASE_BRANCH_NAME }}
 
     - name: Create and switch to branch if not exists
       shell: bash
+      working-directory: ./remote_repo
       if: env.BRANCH_EXISTS == 'false'
       run: |
         git checkout -b ${{ env.RELEASE_BRANCH_NAME }}
