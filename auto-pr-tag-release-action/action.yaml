@@ -67,7 +67,13 @@ runs:
           echo "BRANCH_EXISTS=false" >> $GITHUB_ENV
         fi
 
-    - name: Create branch if not exists
+    - name: Switch to the branch if it exists
+      shell: bash
+      if: env.BRANCH_EXISTS == 'true'
+      run: |
+        git checkout ${{ env.RELEASE_BRANCH_NAME }}
+
+    - name: Create and switch to branch if not exists
       shell: bash
       if: env.BRANCH_EXISTS == 'false'
       run: |
