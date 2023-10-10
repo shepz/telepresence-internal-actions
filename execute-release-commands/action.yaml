@@ -1,5 +1,5 @@
-name: auto-pr-tag-release-action
-description: "Automatically create PRs and tags for Telepresence releases"
+name: execute-release-commands
+description: "Execute commands for Telepresence releases"
 inputs:
   gh_auto_release_token:
     description: "The token to use to authenticate with GitHub"

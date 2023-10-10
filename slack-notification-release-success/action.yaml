@@ -1,0 +1,50 @@
+name: slack-notification-release-success
+description: "Send slack notification on release success"
+inputs:
+  slack_webhook_url:
+    description: "The slack webhook url"
+    required: true
+  telepresence_version:
+    description: "The telepresence version"
+    required: true
+  telepresence_product:
+    description: "The telepresence product"
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Notify Developers about Release
+      id: slack
+      uses: slackapi/slack-github-action@v1.24.0
+      with:
+        payload: |
+          {
+            "blocks": [
+              {
+                "type": "header",
+                "text": {
+                  "type": "plain_text",
+                  "text": "Telepresence ${{ inputs.telepresence_product }} Release Update 🚀"
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Version:* ${{ inputs.telepresence_version }}\n*Status:* ${{ job.status }}"
+                }
+              },
+              {
+                "type": "context",
+                "elements": [
+                  {
+                    "type": "mrkdwn",
+                    "text": "Check the build details <${{ github.event.pull_request.html_url || github.event.head_commit.url }}|here>."
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
