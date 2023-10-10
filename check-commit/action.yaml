@@ -1,9 +1,6 @@
 name: Check commit
 description: "Check commit"
 outputs:
-  is_prepare_release:
-    description: "Is the release needs a prepare"
-    value: ${{ steps.commit_message.outputs.is_prepare_release }}
   telepresence_version:
     description: "The telepresence version"
     value: ${{ steps.commit_message.outputs.telepresence_version }}
@@ -28,7 +25,6 @@ runs:
           else
             echo "GA - No match found."
             echo "telepresence_version=v$current_version" >> $GITHUB_OUTPUT
-            echo "is_prepare_release=1" >> $GITHUB_OUTPUT
           fi
         
         else
@@ -44,16 +40,21 @@ runs:
               # Check if the tag for this version already exists
               if ! git rev-parse "$version" >& /dev/null; then
                 echo "Match found and tag does not exist for: $version"
-                echo "is_prepare_release=0" >> $GITHUB_OUTPUT
                 echo "telepresence_version=$version" >> $GITHUB_OUTPUT
         
               else
                 echo "Match found but a tag already exists for: $version"
-                echo "is_prepare_release=1" >> $GITHUB_OUTPUT
+                if [[ "$version" =~ -rc\.([0-9]+)$ ]]; then
+                  RC_NUM=${BASH_REMATCH[1]}
+                  NEXT_RC_NUM=$((RC_NUM+1))
+                  NEXT_TAG="$version-rc.$NEXT_RC_NUM"
+                  echo "telepresence_version=$NEXT_TAG" >> $GITHUB_OUTPUT
+                fi
+        
               fi
             fi
           else
             echo "No match found."
-            echo "is_prepare_release=1" >> $GITHUB_OUTPUT
+            echo "telepresence_version=$version-rc.0" >> $GITHUB_OUTPUT
           fi
         fi
