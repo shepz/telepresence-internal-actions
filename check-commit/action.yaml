@@ -47,7 +47,7 @@ runs:
                 if [[ "$version" =~ -rc\.([0-9]+)$ ]]; then
                   RC_NUM=${BASH_REMATCH[1]}
                   NEXT_RC_NUM=$((RC_NUM+1))
-                  NEXT_TAG="$version-rc.$NEXT_RC_NUM"
+                  NEXT_TAG="v${current_version}-rc.$NEXT_RC_NUM"
                   echo "telepresence_version=$NEXT_TAG" >> $GITHUB_OUTPUT
                 fi
         
@@ -55,6 +55,6 @@ runs:
             fi
           else
             echo "No match found."
-            echo "telepresence_version=$version-rc.0" >> $GITHUB_OUTPUT
+            echo "telepresence_version=v${current_version}-rc.0" >> $GITHUB_OUTPUT
           fi
         fi
