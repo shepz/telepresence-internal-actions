@@ -17,10 +17,13 @@ runs:
           BASE_REF=$(git rev-parse refs/remotes/origin/${{ github.base_ref }})
           HEAD_REF=$(git rev-parse refs/remotes/origin/${{ github.head_ref }})
           echo $BASE_REF
+        fi
+        
+        if [[ "${{ github.event.label.name }}" == "GA" ]]; then
           commit_subject=$(git log "$BASE_REF".."$HEAD_REF" --format=%s | grep -m1 "^Prepare v${current_version}$") || true
         
           if [[ ! -z "$commit_subject" ]]; then
-            echo "GA - Commit found. Remove prepare commit."
+            echo "GA - Commit found. Remove GA prepare commit."
             exit 1
           else
             echo "GA - No match found."
@@ -28,8 +31,12 @@ runs:
           fi
         
         else
-          current_version=$(echo $GITHUB_REF | sed -e "s/^refs\/heads\/release\///")
-          commit_subject=$(git log FETCH_HEAD..HEAD --format=%s | grep -m1 "^Prepare v${current_version}\+\(-rc\.[0-9]\+\)\?$") || true
+          if [[ "${{ github.event.label.name }}" == "RC" ]]; then
+            commit_subject=$(git log "$BASE_REF".."$HEAD_REF" --format=%s | grep -m1 "^Prepare v${current_version}\+\(-rc\.[0-9]\+\)\?$") || true
+          else
+            current_version=$(echo $GITHUB_REF | sed -e "s/^refs\/heads\/release\///")
+            commit_subject=$(git log FETCH_HEAD..HEAD --format=%s | grep -m1 "^Prepare v${current_version}\+\(-rc\.[0-9]\+\)\?$") || true
+          fi
         
           # If grep doesn't find a match, it will return an empty string
           if [[ ! -z "$commit_subject" ]]; then
