@@ -30,6 +30,30 @@ runs:
       run: |
         echo "RELEASE_BRANCH_NAME=release/$(echo ${{ inputs.telepresence_version }} | sed 's/^v//;s/-rc\.[0-9]*$//')" >> $GITHUB_ENV
 
+    - name: Check and create branch if not exists
+      shell: bash
+      run: |
+        # Determine the default branch
+        DEFAULT_BRANCH=$(curl --silent -H "Authorization: token ${{ inputs.gh_auto_release_token }}" \
+          "https://api.github.com/repos/${{ github.repository }}" | jq -r '.default_branch')
+        
+        echo "The default branch is: $DEFAULT_BRANCH"
+
+        # Check if the target branch exists
+        BRANCH_EXISTS=$(curl --silent --fail -H "Authorization: token ${{ inputs.gh_auto_release_token }}" \
+          "https://api.github.com/repos/${{ github.repository }}/branches/$RELEASE_BRANCH_NAME" || echo "not exists")
+      
+        
+        # If branch doesn't exist, create it using the latest commit from the default branch
+        if [[ "$BRANCH_EXISTS" == "not exists" ]]; then
+          echo "The release branch $RELEASE_BRANCH_NAME does not exists."
+          SHA=$(curl --silent -H "Authorization: token ${{ inputs.gh_auto_release_token }}" \
+            "https://api.github.com/repos/${{ github.repository }}/git/ref/heads/$DEFAULT_BRANCH" | jq '.object.sha')
+          curl --fail -X POST -H "Authorization: token ${{ inputs.gh_auto_release_token }}" \
+            -d '{"ref":"refs/heads/'$RELEASE_BRANCH_NAME'", "sha":'$SHA'}' \
+            "https://api.github.com/repos/${{ github.repository }}/git/refs"
+        fi
+
     - name: Checkout other repo
       uses: actions/checkout@v3
       with:
@@ -56,32 +80,6 @@ runs:
     - name: Install GoMock
       shell: bash
       run: go install github.com/golang/mock/mockgen@v1.6.0
-
-    - name: Check if branch exists
-      shell: bash
-      working-directory: ./remote_repo
-      id: checkbranch
-      run: |
-        if git show-ref --verify --quiet refs/remotes/origin/${{ env.RELEASE_BRANCH_NAME }}; then
-          echo "BRANCH_EXISTS=true" >> $GITHUB_ENV
-        else
-          echo "BRANCH_EXISTS=false" >> $GITHUB_ENV
-        fi
-
-    - name: Switch to the branch if it exists
-      shell: bash
-      working-directory: ./remote_repo
-      if: env.BRANCH_EXISTS == 'true'
-      run: |
-        git checkout ${{ env.RELEASE_BRANCH_NAME }}
-
-    - name: Create and switch to branch if not exists
-      shell: bash
-      working-directory: ./remote_repo
-      if: env.BRANCH_EXISTS == 'false'
-      run: |
-        git checkout -b ${{ env.RELEASE_BRANCH_NAME }}
-        git push origin ${{ env.RELEASE_BRANCH_NAME }}
 
     - name: Execute commands
       shell: bash
