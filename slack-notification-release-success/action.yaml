@@ -17,7 +17,7 @@ runs:
       shell: bash
       id: determine-release
       run: |
-        if [[ ! "${{ inputs.telepresence_version }}" =~ "-rc." ]]; then
+        if [[ "${{ inputs.telepresence_version }}" =~ "-rc." ]]; then
           echo "release_title=RC Release 🐝" >> $GITHUB_OUTPUT
         else
           echo "release_title=GA Release 🚀" >> $GITHUB_OUTPUT
