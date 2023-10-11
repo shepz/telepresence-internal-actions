@@ -13,6 +13,16 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Determine release type
+      shell: bash
+      id: determine-release
+      run: |
+        if [[ ! "${{ inputs.telepresence_version }}" =~ "-rc." ]]; then
+          echo "release_title=RC Release 🐝" >> $GITHUB_OUTPUT
+        else
+          echo "release_title=GA Release 🚀" >> $GITHUB_OUTPUT
+        fi
+
     - name: Notify Developers about Release
       id: slack
       uses: slackapi/slack-github-action@v1.24.0
@@ -24,7 +34,7 @@ runs:
                 "type": "header",
                 "text": {
                   "type": "plain_text",
-                  "text": "Telepresence ${{ inputs.telepresence_product }} Release Update 🚀"
+                  "text": "Telepresence ${{ inputs.telepresence_product }} ${{ steps.determine-release.outputs.release_title }}"
                 }
               },
               {
