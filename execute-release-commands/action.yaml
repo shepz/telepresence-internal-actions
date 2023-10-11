@@ -99,6 +99,6 @@ runs:
       env:
         TELEPRESENCE_VERSION: ${{ inputs.telepresence_version }}
       run: |
-        ${{ inputs.post_commands }} 
+        ${{ inputs.post_push_branch_commands }} 
 
 
