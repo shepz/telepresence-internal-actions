@@ -35,23 +35,23 @@ runs:
       run: |
         # Determine the default branch
         DEFAULT_BRANCH=$(curl --silent -H "Authorization: token ${{ inputs.gh_auto_release_token }}" \
-          "https://api.github.com/repos/${{ github.repository }}" | jq -r '.default_branch')
+          "https://api.github.com/repos/${{ inputs.repository }}" | jq -r '.default_branch')
         
         echo "The default branch is: $DEFAULT_BRANCH"
 
         # Check if the target branch exists
         BRANCH_EXISTS=$(curl --silent --fail -H "Authorization: token ${{ inputs.gh_auto_release_token }}" \
-          "https://api.github.com/repos/${{ github.repository }}/branches/$RELEASE_BRANCH_NAME" || echo "not exists")
+          "https://api.github.com/repos/${{ inputs.repository }}/branches/$RELEASE_BRANCH_NAME" || echo "not exists")
       
         
         # If branch doesn't exist, create it using the latest commit from the default branch
         if [[ "$BRANCH_EXISTS" == "not exists" ]]; then
           echo "The release branch $RELEASE_BRANCH_NAME does not exists."
           SHA=$(curl --silent -H "Authorization: token ${{ inputs.gh_auto_release_token }}" \
-            "https://api.github.com/repos/${{ github.repository }}/git/ref/heads/$DEFAULT_BRANCH" | jq '.object.sha')
+            "https://api.github.com/repos/${{ inputs.repository }}/git/ref/heads/$DEFAULT_BRANCH" | jq '.object.sha')
           curl --fail -X POST -H "Authorization: token ${{ inputs.gh_auto_release_token }}" \
             -d '{"ref":"refs/heads/'$RELEASE_BRANCH_NAME'", "sha":'$SHA'}' \
-            "https://api.github.com/repos/${{ github.repository }}/git/refs"
+            "https://api.github.com/repos/${{ inputs.repository }}/git/refs"
         fi
 
     - name: Checkout other repo
