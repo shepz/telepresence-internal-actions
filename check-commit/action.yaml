@@ -20,7 +20,8 @@ runs:
         fi
         
         if [[ "${{ github.event.label.name }}" == "GA" ]]; then
-          APPROVALS=$(gh pr review list ${{ github.event.pull_request.number }} --repo ${{ github.repository }} | grep APPROVED | wc -l)
+          REVIEWS_JSON=$(gh pr view ${{ github.event.pull_request.number }} --json reviews)
+          APPROVALS=$(echo "$REVIEWS_JSON" | jq '[.reviews[] | select(.state == "APPROVED")] | length')
           if [ "$APPROVALS" -lt "1" ]; then
             echo "No approvals found. GA requires at least 1 approval."
             exit 1
