@@ -20,6 +20,11 @@ runs:
         fi
         
         if [[ "${{ github.event.label.name }}" == "GA" ]]; then
+          APPROVALS=$(gh pr review list ${{ github.event.pull_request.number }} --repo ${{ github.repository }} | grep APPROVED | wc -l)
+          if [ "$APPROVALS" -lt "1" ]; then
+            echo "No approvals found. GA requires at least 1 approval."
+            exit 1
+          fi
           commit_subject=$(git log "$BASE_REF".."$HEAD_REF" --format=%s | grep -m1 "^Prepare v${current_version}$") || true
         
           if [[ ! -z "$commit_subject" ]]; then
