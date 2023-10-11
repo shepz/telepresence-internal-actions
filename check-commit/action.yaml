@@ -9,6 +9,8 @@ runs:
   steps:
     - name: Check Commit Message
       id: commit_message
+      env:
+        GH_TOKEN: ${{ github.token }}
       shell: bash
       run: |
         git fetch origin release/v2
