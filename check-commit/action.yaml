@@ -13,7 +13,12 @@ runs:
         GH_TOKEN: ${{ github.token }}
       shell: bash
       run: |
-        git fetch origin release/v2
+        # Determine the default branch
+        DEFAULT_BRANCH=$(curl --silent -H "Authorization: token ${{ github.token }}" \
+        "https://api.github.com/repos/${{ github.repository }}" | jq -r '.default_branch')
+        
+        git fetch origin $DEFAULT_BRANCH
+        
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
           current_version=$(echo ${{ github.head_ref }} | sed -e "s/^release\///")
           BASE_REF=$(git rev-parse refs/remotes/origin/${{ github.base_ref }})
@@ -59,7 +64,7 @@ runs:
                 echo "telepresence_version=$NEXT_TAG" >> $GITHUB_OUTPUT
                 echo "The next telepresence version is: $NEXT_TAG"
               fi
-      
+        
             fi
           else
             echo "No match found."
